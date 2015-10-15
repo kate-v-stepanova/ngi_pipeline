@@ -28,6 +28,8 @@ from ngi_pipeline.utils.charon import find_projects_from_samples, \
                                       reset_charon_records_by_name
 from ngi_pipeline.utils.filesystem import locate_project, recreate_project_from_filesystem
 from ngi_pipeline.utils.parsers import parse_samples_from_vcf
+from ngi_pipeline.gt_concordance.gt_compare import run_concordance_check
+from ngi_pipeline.gt_concordance.gt_compare_proj import run_project_concordance
 
 LOG = minimal_logger(os.path.basename(__file__))
 inflector = inflect.engine()
@@ -85,17 +87,25 @@ class ArgumentParserWithTheFlagsThatIWant(argparse.ArgumentParser):
                       "Use flag multiple times for multiple samples."))
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="Launch NGI pipeline")
+
     subparsers = parser.add_subparsers(help="Choose the mode to run")
     parser.add_argument("-v", "--verbose", dest="quiet", action="store_false",
             help=("Send mails (INFO/WARN/ERROR); default False."))
+
+    # Add subparser for gt_concordance
+    parser_gt_concordance = subparsers.add_parser('gt-concordance', help="Check concordance")
+    parser_gt_concordance.add_argument('-p', '--project', help="Check concordance for the project")
+    parser_gt_concordance.add_argument('-s', '--sample', help="Check concordance for the sample")
+    parser_gt_concordance.add_argument('-m', '--maf-file', help="MAF file to create .gt files")
+    #
+    # args = parser.parse_args()
+    # print(args)
 
     # Add subparser for the server
     parser_server = subparsers.add_parser('server', help="Start ngi_pipeline server")
     parser_server.add_argument('-p', '--port', type=int,
             help="Port on which to listen for incoming connections")
-
 
     # Add subparser for organization
     parser_organize = subparsers.add_parser('organize',
@@ -228,7 +238,6 @@ if __name__ == "__main__":
     # Add sub-subparser for sample genotyping
     #genotype_sample = subparsers_genotype.add_parser('sample',
     #        help="Start genotype analysis for one specific sample in a project.")
-
 
     args = parser.parse_args()
 
@@ -512,6 +521,24 @@ if __name__ == "__main__":
                                             level="genotype")
 
     ## Server
-    elif 'port' in args:
+    elif args.__dict__.get('port'):
         LOG.info('Starting ngi_pipeline server at port {}'.format(args.port))
         server_main.start(args.port)
+
+    # todo: rewrite the whole thing with click
+    if sys.argv[1] == 'gt-concordance':
+        maf_file = args.maf_file
+        if not maf_file:
+            raise RuntimeError('Too few arguments. MAF-file is mandatory')
+        sample = args.sample
+        project = args.project
+        if project:
+            run_project_concordance(project, maf_file)
+        elif sample:
+            run_concordance_check(sample, maf_file)
+        else:
+            # todo: find projects in the default directory
+            pass
+
+
+
