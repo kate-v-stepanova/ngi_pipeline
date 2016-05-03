@@ -99,3 +99,12 @@ test_data:
                 flowcell: /proj/a2014205/nobackup/NGI/test_data/whole_genome_reseq/150424_ST-E00214_0031_BH2WY7CCXX
                 #project: /proj/a2014205/nobackup/NGI/test_data/whole_genome_reseq/DATA/P0000
                 vcf: /proj/a2014205/nobackup/NGI/test_data/whole_genome_reseq/vcf/
+
+gt_concordance:
+    project_analysis_path: /apus/v1/a2014205/nobackup/NGI/analysis_ready/ANALYSIS/ # + project_id
+    sample_analysis_output_path: piper_ngi/08_misc/ # + sample_id
+    gatk_path:      /sw/apps/bioinfo/GATK/3.4-46/GenomeAnalysisTK.jar
+    gatk_ref_file:  /proj/a2014205/piper_references/gatk_bundle/2.8/b37/human_g1k_v37.fasta
+    gatk_var_file:  /proj/a2014205/piper_references/gatk_bundle/2.8/b37/dbsnp_138.b37.vcf
+    interval_file:  /apus/v1/a2014205/nobackup/NGI/maf_data/snps.interval_list
+    snps_file:      /apus/v1/a2014205/nobackup/NGI/maf_data/maf_snps.txt

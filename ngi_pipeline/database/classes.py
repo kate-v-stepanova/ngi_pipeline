@@ -58,7 +58,7 @@ class CharonSession(requests.Session):
         self._sample_params = ('sampleid', 'analysis_status', 'qc_status',
                                'genotype_status', 'genotype_concordance',
                                'total_autosomal_coverage', 'total_sequenced_reads',
-                               'delivery_status')
+                               'delivery_status', 'genotype_status')
         self._sample_reset_params = tuple(set(self._sample_params) - \
                                           set(['sampleid', 'total_sequenced_reads']))
         self._libprep_params = ('libprepid', 'qc')

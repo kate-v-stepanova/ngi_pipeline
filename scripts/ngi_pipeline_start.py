@@ -28,6 +28,9 @@ from ngi_pipeline.utils.charon import find_projects_from_samples, \
                                       reset_charon_records_by_name
 from ngi_pipeline.utils.filesystem import locate_project, recreate_project_from_filesystem
 from ngi_pipeline.utils.parsers import parse_samples_from_vcf
+from ngi_pipeline.utils.gt_concordance import run_gatk, parse_xlsx_files
+
+from ngi_pipeline.database.classes import CharonSession
 
 LOG = minimal_logger(os.path.basename(__file__))
 inflector = inflect.engine()
@@ -234,6 +237,23 @@ if __name__ == "__main__":
     #genotype_sample = subparsers_genotype.add_parser('sample',
     #        help="Start genotype analysis for one specific sample in a project.")
 
+    # Add another subparser for genotyping (Stockholm)
+    parser_genotype_sto = subparsers.add_parser('genotype_stockholm', help="Launch genotype concordance analysis for ngi_pipeline Stockholm.")
+    parser_genotype_sto.add_argument('analyse_all', default=True)
+    # subparsers_gt_sto = parser_genotype_sto.add_subparsers(help='Choose unit to analyze')
+    # sample_gt_parser = subparsers_gt_sto.add_parser('sample')
+    # project_gt_parser = subparsers_gt_sto.add_parser('project')
+    # gt_sample = sample_gt_parser.add_argument('-s', '--sample', dest='sample_id')
+    # gt_project = project_gt_parser.add_argument('-p', '--project', dest='project_id')
+
+
+    # Add subparser for the concordance check
+    # parser_genotype_sto = subparsers.add_parser('run_concordance', help="Launch genotype concordance analysis for ngi_pipeline Stockholm.")
+    # subparsers_gt_sto = parser_genotype_sto.add_subparsers(help='Choose unit to analyze')
+    # sample_gt_parser = subparsers_gt_sto.add_parser('sample')
+    # project_gt_parser = subparsers_gt_sto.add_parser('project')
+    # gt_sample = sample_gt_parser.add_argument('-s', '--sample', dest='sample_id')
+    # gt_project = project_gt_parser.add_argument('-p', '--project', dest='project_id')
 
     args = parser.parse_args()
 
@@ -523,3 +543,42 @@ if __name__ == "__main__":
     elif 'port' in args:
         LOG.info('Starting ngi_pipeline server at port {}'.format(args.port))
         server_main.start(args.port)
+
+    # its wrong, but doesn't matter, will be rewritten with click
+    elif 'analyse_all' in args:
+        # 1. parse xl files
+        xlsx_path = "/Users/kate/work/gt_concordance"
+        genotype_data = parse_xlsx_files(xlsx_path)
+        # print(genotype_data)
+        # 2. check sample in charon: if analysis status != ANALISED: skip
+        charon_config = { 'charon': {
+            'charon_base_url': 'http://charon-dev.scilifelab.se/',
+            'charon_api_token': '2540c9f62332421289442ebeda0a1601',
+        }}
+        charon_session = CharonSession(config=charon_config)
+        # genotype_data = {'P4257': {
+        #     'P4257_1004': {},
+        #     'P4257_1003': {},
+        #     'P4257_1002': {},
+        #     'P4257_1001': {},
+        # }}
+        for project_id in genotype_data:
+            samples = charon_session.project_get_samples(project_id)
+            samples = samples.get('samples')
+            for sample in samples:
+                analysis_status = sample.get('analysis_status')
+                genotype_status = sample.get('genotype_status')
+                print(analysis_status)
+                if analysis_status == 'ANALYSED':
+                    # if Genotype Status != 'AVAILABLE':
+                    if not genotype_status != 'AVAILABLE':
+                        print('run gatk')
+                        # run gatk genotyping & change status to available
+
+                print(sample.get('genotype_status', 'bla'))
+
+
+
+
+
+        # todo: 4. run the concordance script
