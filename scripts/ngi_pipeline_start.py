@@ -546,39 +546,46 @@ if __name__ == "__main__":
 
     # its wrong, but doesn't matter, will be rewritten with click
     elif 'analyse_all' in args:
-        # 1. parse xl files
-        xlsx_path = "/Users/kate/work/gt_concordance"
-        genotype_data = parse_xlsx_files(xlsx_path)
-        # print(genotype_data)
-        # 2. check sample in charon: if analysis status != ANALISED: skip
-        charon_config = { 'charon': {
-            'charon_base_url': 'http://charon-dev.scilifelab.se/',
-            'charon_api_token': '2540c9f62332421289442ebeda0a1601',
-        }}
-        charon_session = CharonSession(config=charon_config)
-        # genotype_data = {'P4257': {
-        #     'P4257_1004': {},
-        #     'P4257_1003': {},
-        #     'P4257_1002': {},
-        #     'P4257_1001': {},
+        from ngi_pipeline.utils.gt_concordance import genotype_stockholm
+        genotype_stockholm()
+
+        # # 1. parse xl files
+        # xlsx_path = "/Users/kate/work/gt_concordance"
+        # genotype_data = parse_xlsx_files(xlsx_path)
+        # # print(genotype_data)
+        # # 2. check sample in charon: if analysis status != ANALISED: skip
+        # charon_config = { 'charon': {
+        #     'charon_base_url': 'http://charon-dev.scilifelab.se/',
+        #     'charon_api_token': '2540c9f62332421289442ebeda0a1601',
         # }}
-        for project_id in genotype_data:
-            samples = charon_session.project_get_samples(project_id)
-            samples = samples.get('samples')
-            for sample in samples:
-                analysis_status = sample.get('analysis_status')
-                genotype_status = sample.get('genotype_status')
-                print(analysis_status)
-                if analysis_status == 'ANALYSED':
-                    # if Genotype Status != 'AVAILABLE':
-                    if not genotype_status != 'AVAILABLE':
-                        print('run gatk')
-                        # run gatk genotyping & change status to available
-
-                print(sample.get('genotype_status', 'bla'))
-
-
-
-
-
-        # todo: 4. run the concordance script
+        # charon_session = CharonSession(config=charon_config)
+        # # genotype_data = {'P4257': {
+        # #     'P4257_1004': {},
+        # #     'P4257_1003': {},
+        # #     'P4257_1002': {},
+        # #     'P4257_1001': {},
+        # # }}
+        #
+        # for project_id in genotype_data:
+        #     samples = charon_session.project_get_samples(project_id)
+        #     samples = samples.get('samples')
+        #     for sample in samples:
+        #         sample_id = sample.get('sampleid')
+        #         print(sample_id)
+        #
+        #         analysis_status = sample.get('analysis_status')
+        #         genotype_status = sample.get('genotype_status')
+        #         print(analysis_status)
+        #         print(genotype_status)
+        #         if analysis_status == 'ANALYSED':
+        #             # if Genotype Status != 'AVAILABLE':
+        #             if not genotype_status != 'AVAILABLE':
+        #                 print('run gatk')
+        #                 run_gatk(sample_id)
+        #                 sample['genotype_status'] = 'AVAILABLE'
+        #                 # run gatk genotyping & change status to available
+        #                 # save status in charon
+        #
+        #             if genotype_status == 'AVAILABLE':
+        #                 # todo: 4. run the concordance script
+        #                 pass
